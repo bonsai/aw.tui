@@ -11,18 +11,19 @@ import (
 )
 
 type Repo struct {
-	Name        string            `json:"name"`
-	FullName    string            `json:"full_name"`
-	Description string            `json:"description"`
-	HTMLURL     string            `json:"html_url"`
-	Language    string            `json:"language"`
-	Topics      []string          `json:"topics"`
-	Stars       int               `json:"stargazers_count"`
-	Forks       int               `json:"forks_count"`
-	UpdatedAt   string            `json:"updated_at"`
-	Archived    bool              `json:"archived"`
-	Fork        bool              `json:"fork"`
-	Owner       map[string]string `json:"owner"`
+	Name         string            `json:"name"`
+	FullName     string            `json:"full_name"`
+	Description  string            `json:"description"`
+	HTMLURL      string            `json:"html_url"`
+	Language     string            `json:"language"`
+	DefaultBranch string           `json:"default_branch"`
+	Topics       []string          `json:"topics"`
+	Stars        int               `json:"stargazers_count"`
+	Forks        int               `json:"forks_count"`
+	UpdatedAt    string            `json:"updated_at"`
+	Archived     bool              `json:"archived"`
+	Fork         bool              `json:"fork"`
+	Owner        map[string]string `json:"owner"`
 }
 
 // FetchRecent returns at most limit repositories ordered by GitHub's updated_at.
@@ -46,19 +47,19 @@ func FetchRecent(owner string, limit int) ([]Repo, error) {
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK { return nil, fmt.Errorf("github API: %s", resp.Status) }
 
-	var repos []Repo
-	if err := json.NewDecoder(resp.Body).Decode(&repos); err != nil { return nil, err }
-	if len(repos) > limit { repos = repos[:limit] }
+	var rs []Repo
+	if err := json.NewDecoder(resp.Body).Decode(&rs); err != nil { return nil, err }
+	if len(rs) > limit { rs = rs[:limit] }
 
 	// Deterministic order makes graph snapshots diff-friendly.
-	sort.Slice(repos, func(i, j int) bool { return repos[i].FullName < repos[j].FullName })
-	return repos, nil
+	sort.Slice(rs, func(i, j int) bool { return rs[i].FullName < rs[j].FullName })
+	return rs, nil
 }
 
 func Tokens(r Repo) []string {
 	text := strings.ToLower(strings.Join([]string{r.Name, r.Description, r.Language, strings.Join(r.Topics, " ")}, " "))
-	fields := strings.FieldsFunc(text, func(r rune) bool {
-		return r < 'a' || r > 'z' && r < '0' || r > '9'
+	fields := strings.FieldsFunc(text, func(ch rune) bool {
+		return !(ch >= 'a' && ch <= 'z') && !(ch >= '0' && ch <= '9')
 	})
 	seen := map[string]bool{}
 	out := make([]string, 0, len(fields))
