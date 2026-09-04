@@ -46,6 +46,22 @@ bonsai.state
 bonsai.action
 ```
 
+### Asset の 7 ジャンル
+
+```text
+bonsai.asset
+│
+├── repository    ← コード資産（旧 code）
+├── dataset       ← データ・知識（旧 data）
+├── model         ← 推論モデル
+├── skill         ← 能力・関数
+├── mcp           ← 外部接続
+├── agent         ← 実行主体
+└── workflow      ← 手順・AW
+```
+
+`soubi` はこの 7 ジャンルを閲覧する View。
+
 ## 3. エコシステム定義と責務分担
 
 ### エコシステム図
@@ -162,15 +178,24 @@ bonsai/aw.tui         = 行動を見る・操作する
 
 #### soubi の View
 
+`soubi` が抱える資産ジャンルは **7 つ**に統一する。
+
 ```text
 organization
-├── repos
-├── agents
-├── skills
-├── mcp
-├── models
-└── workflows
+├── repositories    ← コード資産
+├── agents          ← 実行主体
+├── skills          ← 能力・関数
+├── mcps            ← 外部接続
+├── models          ← 推論モデル
+├── workflows       ← 手順・AW
+└── datasets        ← データ・知識
 ```
+
+統合ルール:
+
+- `code` → `repositories`
+- `data` → `datasets`
+- `model` / `skill` / `mcp` / `agent` / `workflow` はそのまま
 
 #### aw.tui の View
 

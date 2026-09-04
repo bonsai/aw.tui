@@ -67,7 +67,7 @@
       "properties": {
         "kind": {
           "type": "string",
-          "enum": ["code", "data", "model", "skill", "mcp", "agent", "workflow"]
+          "enum": ["repository", "dataset", "model", "skill", "mcp", "agent", "workflow"]
         },
         "name": { "type": "string" },
         "repository": { "type": "string" },
