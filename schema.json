@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://bonsai.github.io/ontology/schema.json",
+  "title": "Bonsai Ontology",
+  "description": "MVC + Ontology definitions for bonsai organization, assets, agents, workflows, states, and actions.",
+  "type": "object",
+  "properties": {
+    "organization": {
+      "$ref": "#/definitions/Organization"
+    },
+    "repository": {
+      "$ref": "#/definitions/Repository"
+    },
+    "asset": {
+      "$ref": "#/definitions/Asset"
+    },
+    "agent": {
+      "$ref": "#/definitions/Agent"
+    },
+    "workflow": {
+      "$ref": "#/definitions/Workflow"
+    },
+    "state": {
+      "$ref": "#/definitions/State"
+    },
+    "action": {
+      "$ref": "#/definitions/Action"
+    }
+  },
+  "definitions": {
+    "Organization": {
+      "type": "object",
+      "required": ["name", "repositories"],
+      "properties": {
+        "name": { "type": "string" },
+        "repositories": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "Repository": {
+      "type": "object",
+      "required": ["name", "full_name", "owner"],
+      "properties": {
+        "name": { "type": "string" },
+        "full_name": { "type": "string" },
+        "owner": { "type": "string" },
+        "description": { "type": "string" },
+        "html_url": { "type": "string", "format": "uri" },
+        "language": { "type": "string" },
+        "default_branch": { "type": "string" },
+        "topics": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "stars": { "type": "integer", "minimum": 0 },
+        "forks": { "type": "integer", "minimum": 0 },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "archived": { "type": "boolean" },
+        "fork": { "type": "boolean" }
+      }
+    },
+    "Asset": {
+      "type": "object",
+      "required": ["kind", "name"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["code", "data", "model", "skill", "mcp", "agent", "workflow"]
+        },
+        "name": { "type": "string" },
+        "repository": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "Agent": {
+      "type": "object",
+      "required": ["name", "equipment"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "equipment": {
+          "type": "object",
+          "properties": {
+            "repositories": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "skills": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "models": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "mcp": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "Workflow": {
+      "type": "object",
+      "required": ["name", "steps"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["action"],
+            "properties": {
+              "action": { "type": "string" },
+              "agent": { "type": "string" },
+              "input": { "type": "object" },
+              "approval": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "State": {
+      "type": "object",
+      "required": ["entity", "metrics"],
+      "properties": {
+        "entity": { "type": "string" },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "activity": { "type": "number" },
+            "health": { "type": "number" },
+            "score": { "type": "number" },
+            "cluster": { "type": "string" },
+            "relation": { "type": "object" },
+            "execution": { "type": "string" },
+            "assignment": { "type": "string" }
+          }
+        }
+      }
+    },
+    "Action": {
+      "type": "object",
+      "required": ["name", "kind"],
+      "properties": {
+        "name": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["view", "configure", "equip", "inspect", "calculate", "run", "approve"]
+        },
+        "description": { "type": "string" },
+        "target": { "type": "string" }
+      }
+    }
+  }
+}
