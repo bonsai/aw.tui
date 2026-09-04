@@ -46,7 +46,79 @@ bonsai.state
 bonsai.action
 ```
 
-## 3. MVC 分離
+## 3. エコシステム定義と責務分担
+
+### エコシステム図
+
+```text
+                    BONSAI
+                      │
+          ┌───────────┴───────────┐
+          │                       │
+        MODEL                   VIEW
+          │                       │
+   ┌──────┼──────┐          ┌─────┴─────┐
+   │      │      │          │           │
+ repos   BQML  ontology   soubi.tui  aw.tui
+   │      │                  │           │
+   │    state                │ events   │ events
+   │      │                  └─────┬─────┘
+   └──────┴────────────────────────┘
+                                  │
+                              CONTROLLER
+                                  │
+                              AW / Agent
+                                  │
+                                  ▼
+                                  pi
+```
+
+### 責務分担
+
+| コンポーネント | 責務 | しないこと |
+|----------------|------|------------|
+| `ontology/` | 組織・資産・Agent・Workflow・State・Action の定義と契約 | データの取得・計算・表示 |
+| `repos/` | 組織が所有するリポジトリの生データ保持 | 分析・状態計算 |
+| `github-observatory/` | GitHub → BigQuery → BQML パイプライン。Feature 生成と State 計算 | UI・実行判断 |
+| `yaml-as-agent/` | Agent の装備・能力・役割を YAML で定義 | 実際の実行 |
+| `soubi.tui` | 資産の閲覧。What do we have? の表示 | 計算・判断・実行 |
+| `aw.tui` | 実行・Workflow・承認の操作UI。What are we doing? の表示 | 計算・判断 |
+| `AW / Agent` | イベント解釈・判断・Coordinator 制御 | 直接の GitHub 操作以外の低レベル作業は pi に委譲 |
+| `pi` | 指示に基づく実作業・コード編集・コマンド実行 | 組織状態の計算・戦略判断 |
+
+### データフロー
+
+```text
+GitHub API
+    ↓
+github-observatory (fetch + store)
+    ↓
+BigQuery (raw + feature tables)
+    ↓
+BQML (Health / Activity / Score / Cluster / Relation)
+    ↓
+Organization State (bonsai.state.*)
+    ↓
+soubi.tui （閲覧） / aw.tui （操作）
+    ↓
+event emit
+    ↓
+AW / Agent
+    ↓
+pi
+```
+
+### 人間とAIの役割
+
+| 段階 | 人間 | AI（pi / Agent） |
+|------|------|------------------|
+| 設計・承認 | オントロジー・責務の最終判断 | 草案作成・影響分析 |
+| Model 実装 | レビュー・承認 | github-observatory / ontology 実装 |
+| View 実装 | 操作性の確認 | soubi / aw.tui 実装 |
+| Controller 実装 | 重要イベントの承認設定 | AW / Agent 実装 |
+| 運用 | Go/No-Go 判断 | 継続的な観測・実行・記録 |
+
+## 4. MVC 分離
 
 ### Model（真実のデータ・契約・計算）
 
@@ -138,7 +210,7 @@ TUI はイベントを発行するだけ:
 
 判断は AW / Agent 側。
 
-## 4. 装備のオントロジー
+## 5. 装備のオントロジー
 
 ```text
 Repository
@@ -176,7 +248,7 @@ equipment:
     - github
 ```
 
-## 5. State は別 namespace
+## 6. State は別 namespace
 
 ```text
 bonsai.state
@@ -204,7 +276,7 @@ state:
 
 TUI はこれを表示するだけ。
 
-## 6. Action（ドラクエ風操作）
+## 7. Action（ドラクエ風操作）
 
 ```text
 みる      → view
@@ -218,7 +290,7 @@ TUI はこれを表示するだけ。
 
 これらを `bonsai.action` として統一する。
 
-## 7. 現在の aw.tui からの移行
+## 8. 現在の aw.tui からの移行
 
 ### 現状
 
@@ -274,7 +346,7 @@ bonsai/yaml-as-agent/
 | `cmd/aw-tui` の TUI | `aw.tui/internal/tui`（View のみ） |
 | `cmd/aw-tui` のキー処理 | `aw.tui/internal/events`（イベント発行） |
 
-## 8. 実装順序
+## 9. 実装順序
 
 1. `ontology/` YAML スキーマ作成（`schema.json` 参照）
 2. `github-observatory/` へ `repos` + `graph` を移動
@@ -283,7 +355,7 @@ bonsai/yaml-as-agent/
 5. `yaml-as-agent` 新規作成（Agent 装備定義）
 6. `aw.tui` と `soubi` からのイベントを AW / Agent に接続
 
-## 9. 非機能
+## 10. 非機能
 
 - `aw.tui` は依然として Bubble Tea + lipgloss
 - `soubi` も同じスタックで統一
@@ -291,7 +363,7 @@ bonsai/yaml-as-agent/
 - ontology は YAML + JSON Schema で検証
 - BQML は BigQuery 上で実行
 
-## 10. 完了基準
+## 11. 完了基準
 
 - [ ] `ontology/` に 7 つの YAML スキーマが存在
 - [ ] `aw.tui` が View + events のみ
